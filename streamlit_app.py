@@ -72,7 +72,7 @@ if st.button("📡 取得全台天氣 + Gemini 摘要"):
                 name = element.get("elementName")
                 times = element.get("time", [])
                 if times:
-                    row[name] = times[0].get("parameter", {}).get("parameterName")
+                    row[name] = times[1].get("parameter", {}).get("parameterName")
             rows.append(row)
 
         df = pd.DataFrame(rows)
