@@ -2,6 +2,7 @@
 import streamlit as st
 import requests
 import google.generativeai as genai
+import certifi
 
 st.set_page_config(page_title="天氣通知小助理 Demo", layout="centered")
 st.title("🌞 天氣通知小助理 Demo")
@@ -22,11 +23,12 @@ def fetch_latest_weather():
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=10,verify=False)  # 保持 SSL 驗證
+        # 使用 certifi 確保 SSL 驗證正常
+        resp = requests.get(url, params=params, timeout=10, verify=certifi.where())
         resp.raise_for_status()
         data = resp.json()
 
-        # 注意：正確的 key 是 "location"
+        # 正確的 key 是 "location"
         locations = data.get("records", {}).get("location", [])
         if not locations:
             return {"error": "⚠️ 沒有資料"}
@@ -43,11 +45,14 @@ def call_gemini(text):
     genai.configure(api_key=GEMINI_KEY)
 
     try:
-        model = "models/text-bison-001"
+        # 使用新版 SDK 建立模型
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
         prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊：
 
 {text}"""
-        response = genai.generate_text(model=model, prompt=prompt)
+        response = model.generate_content(prompt)
+
         return response.text
     except Exception as e:
         return f"Gemini 錯誤：{e}"
