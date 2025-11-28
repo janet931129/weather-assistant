@@ -4,7 +4,7 @@ import requests
 import google.generativeai as genai
 
 st.set_page_config(page_title="天氣通知小助理 Demo", layout="centered")
-st.title("🌤 天氣通知小助理 Demo")
+st.title("🌞 天氣通知小助理 Demo")
 st.caption("CWA 天氣資訊 結合 Gemini LLM")
 
 CWA_KEY = st.secrets.get("CWA_API_KEY")
@@ -20,10 +20,12 @@ def fetch_latest_weather():
         resp = requests.get(url, params=params, timeout=10, verify=False)
         resp.raise_for_status()
         data = resp.json()
-        records = data.get("records", {}).get("locations", [])
-        if not records:
+        locations = data.get("records", {}).get("locations", [])
+        if not locations:
             return {"error": "沒有資料"}
-        return records[0]  # 只取最新一筆
+        # 取最新一筆 location
+        location_data = locations[0].get("location", [])[0]
+        return location_data
     except Exception as e:
         return {"error": str(e)}
 
@@ -34,7 +36,10 @@ def call_gemini(text):
     genai.configure(api_key=GEMINI_KEY)
     try:
         model = "models/text-bison-001"
-        response = genai.generate_text(model=model, prompt=f"請用溫柔、親切的語氣摘要以下天氣資訊：\n{text}")
+        response = genai.generate_text(
+            model=model,
+            prompt=f"請用溫柔、親切的語氣摘要以下天氣資訊：\n{text}"
+        )
         return response.text
     except Exception as e:
         return f"Gemini 錯誤：{e}"
@@ -49,10 +54,10 @@ if st.button("📡 取得最新天氣 + Gemini 摘要"):
 
     if "error" not in data:
         # 整理重點欄位
-        location = data.get("locationName", "")
-        weather = data.get("weatherElement", [])
+        location_name = data.get("locationName", "")
+        weather_elements = data.get("weatherElement", [])
         clean_text = {}
-        for element in weather:
+        for element in weather_elements:
             name = element.get("elementName")
             times = element.get("time", [])
             if times:
