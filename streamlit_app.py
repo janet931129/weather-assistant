@@ -81,3 +81,12 @@ if st.button("📡 取得全台天氣 + Gemini 摘要"):
 
         st.subheader("🤖 Gemini 溫柔摘要")
         st.write(summary)
+
+        # === 下拉選單功能 ===
+        st.subheader("🔽 選擇城市查看詳細資料")
+        city_list = df["城市"].tolist()
+        selected_city = st.selectbox("請選擇城市", city_list)
+
+        if selected_city:
+            city_data = df[df["城市"] == selected_city]
+            st.write(city_data)
