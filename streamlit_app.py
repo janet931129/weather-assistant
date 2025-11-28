@@ -23,7 +23,7 @@ def fetch_latest_weather():
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=10, verify=False)  # 關閉 SSL 驗證
+        resp = requests.get(url, params=params, timeout=10)  # 關閉 SSL 驗證
         resp.raise_for_status()
         data = resp.json()
 
