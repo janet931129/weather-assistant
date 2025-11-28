@@ -27,7 +27,7 @@ def fetch_latest_weather():
         resp.raise_for_status()
         data = resp.json()
 
-        locations = data.get("records", {}).get("locations", [])
+        locations = data.get("records", {}).get("location", [])
         if not locations:
             return {"error": "⚠️ 沒有資料"}
 
