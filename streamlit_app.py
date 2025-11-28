@@ -23,12 +23,10 @@ def fetch_latest_weather():
     }
 
     try:
-        # 使用 certifi 確保 SSL 驗證正常
-        resp = requests.get(url, params=params, timeout=10, verify=False)
+        resp = requests.get(url, params=params, timeout=10, verify=certifi.where())
         resp.raise_for_status()
         data = resp.json()
 
-        # 正確的 key 是 "location"
         locations = data.get("records", {}).get("location", [])
         if not locations:
             return {"error": "⚠️ 沒有資料"}
@@ -44,16 +42,24 @@ def call_gemini(text):
 
     genai.configure(api_key=GEMINI_KEY)
 
-    try:
-        # 使用新版 SDK 建立模型
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊：
+    prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊：
 
 {text}"""
-        response = model.generate_content(prompt)
 
-        return response.text
+    try:
+        # 嘗試新版 SDK 寫法
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception:
+            # 如果失敗，退回舊版 SDK 寫法
+            response = genai.generate_text(
+                model="models/text-bison-001",
+                prompt=prompt
+            )
+            # 舊版回傳結構不同
+            return getattr(response, "result", None) or getattr(response, "text", None) or str(response)
     except Exception as e:
         return f"Gemini 錯誤：{e}"
 
