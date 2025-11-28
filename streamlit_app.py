@@ -1,15 +1,16 @@
-# weather_app.py
 import streamlit as st
 import requests
 import google.generativeai as genai
 import certifi
 
-st.set_page_config(page_title="天氣通知小助理 Demo", layout="centered")
-st.title("🌞 天氣通知小助理 Demo")
-st.caption("CWA 天氣資訊 結合 Gemini LLM")
+# === Streamlit 基本設定 ===
+st.set_page_config(page_title="🌥️ 多雲 + API-first Demo", layout="centered")
+st.title("🌥️ 多雲 + API-first Demo")
+st.caption("CWA 天氣資料 + Gemini LLM 整合")
 
-CWA_KEY = st.secrets.get("CWA_API_KEY")
-GEMINI_KEY = st.secrets.get("GEMINI_API_KEY")
+# === API Key 設定 ===
+CWA_KEY = "CWA-FCEEAE83-A00B-455B-BD97-208C11A9E5F3"   # 中央氣象署 API Key
+GEMINI_KEY = "AIzaSyDJ0Opfq__BMivJ7u3uergg4UeYid03wys" # Google Gemini API Key
 
 # === 取得最新天氣預報 ===
 def fetch_latest_weather():
@@ -23,7 +24,7 @@ def fetch_latest_weather():
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=10, verify=False)
+        resp = requests.get(url, params=params, timeout=10, verify=certifi.where())
         resp.raise_for_status()
         data = resp.json()
 
@@ -42,7 +43,7 @@ def call_gemini(text):
 
     genai.configure(api_key=GEMINI_KEY)
 
-    prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊：
+    prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊，並加上一句溫和的問候：
 
 {text}"""
 
