@@ -24,7 +24,7 @@ def fetch_all_weather():
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=10, verify=certifi.where())
+        resp = requests.get(url, params=params, timeout=10, verify=False)
         resp.raise_for_status()
         data = resp.json()
 
