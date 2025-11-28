@@ -1,71 +1,65 @@
+# weather_app.py
 import streamlit as st
 import requests
 import google.generativeai as genai
 
-st.set_page_config(page_title="天氣預報小助理 Demo", layout="centered")
-
-st.title("☀️ 天氣預報小助理 Demo")
-st.caption("CWA 一般天氣預報資料 + Gemini LLM 智慧摘要")
+st.set_page_config(page_title="天氣通知小助理 Demo", layout="centered")
+st.title("🌤 天氣通知小助理 Demo")
+st.caption("CWA 天氣資訊 結合 Gemini LLM")
 
 CWA_KEY = st.secrets.get("CWA_API_KEY")
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY")
 
-# === CWA Weather API ===
-def fetch_weather():
+# === 取得最新天氣預報 ===
+def fetch_latest_weather():
     if not CWA_KEY:
-        return {"error": "❌ CWA API key 未設定"}
-
+        return {"error": "CWA API Key 未設定"}
     url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
-    params = {"Authorization": CWA_KEY, "locationName": "臺北市"}
-
+    params = {"Authorization": CWA_KEY, "locationName": "臺北市", "limit": 1}
     try:
-        resp = requests.get(url, params=params, timeout=10, verify=False)
+        resp = requests.get(url, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
-
-        if data.get("success") != "true":
-            return {"error": "❌ CWA 回傳資料錯誤"}
-
-        return data["records"]["location"][0]
-
+        records = data.get("records", {}).get("locations", [])
+        if not records:
+            return {"error": "沒有資料"}
+        return records[0]  # 只取最新一筆
     except Exception as e:
-        return {"error": f"API 錯誤: {e}"}
+        return {"error": str(e)}
 
-
-# === Gemini Summary ===
-def call_gemini(weather):
+# === Gemini LLM 生成摘要 ===
+def call_gemini(text):
     if not GEMINI_KEY:
-        return "❌ Gemini API Key 未設定"
-
+        return "Gemini API Key 未設定"
     genai.configure(api_key=GEMINI_KEY)
-    model = genai.GenerativeModel("gemini-pro")
-
     try:
-        prompt = f"""
-你是一位溫柔親切的小助理，請以簡單、安撫、體貼的語氣摘要臺北市未來 36 小時天氣：
-
-{weather}
-
-請用條列式摘要並補上一句關心的提醒，例如「記得帶傘喔！」或「注意溫度變化」。"""
-
-        response = model.generate_content(prompt)
+        model = "models/text-bison-001"
+        response = genai.generate_text(model=model, prompt=f"請用溫柔、親切的語氣摘要以下天氣資訊：\n{text}")
         return response.text
-
     except Exception as e:
         return f"Gemini 錯誤：{e}"
 
-
 # === UI ===
-if st.button("🌤 取得天氣預報 + Gemini 摘要"):
-    with st.spinner("正在取得最新天氣資料..."):
-        weather_data = fetch_weather()
+if st.button("📡 取得最新天氣 + Gemini 摘要"):
+    with st.spinner("正在抓取 CWA 天氣資料..."):
+        data = fetch_latest_weather()
 
-    st.subheader("📄 來自 CWA 的天氣預報（整理後）")
-    st.write(weather_data)
+    st.subheader("📄 最新天氣原始資料（整理後）")
+    st.write(data)
 
-    if "error" not in weather_data:
+    if "error" not in data:
+        # 整理重點欄位
+        location = data.get("locationName", "")
+        weather = data.get("weatherElement", [])
+        clean_text = {}
+        for element in weather:
+            name = element.get("elementName")
+            times = element.get("time", [])
+            if times:
+                clean_text[name] = times[0].get("parameter", {}).get("parameterName")
+
         with st.spinner("Gemini 正在生成摘要..."):
-            summary = call_gemini(weather_data)
+            summary = call_gemini(clean_text)
 
         st.subheader("🤖 Gemini 溫柔摘要")
         st.write(summary)
