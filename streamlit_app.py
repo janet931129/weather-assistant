@@ -49,7 +49,7 @@ def call_gemini(text):
 
     try:
         # 專用新版 Gemini-1.5-flash
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-pro")
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
