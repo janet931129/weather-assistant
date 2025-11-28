@@ -4,10 +4,12 @@ import google.generativeai as genai
 import certifi
 import pandas as pd
 
+# === Streamlit 基本設定 ===
 st.set_page_config(page_title="🌥️ 多雲 + API-first Demo", layout="centered")
 st.title("🌥️ 多雲 + API-first Demo")
 st.caption("CWA 全台天氣資料 + Gemini LLM 整合")
 
+# === API Key 設定 ===
 CWA_KEY = "CWA-FCEEAE83-A00B-455B-BD97-208C11A9E5F3"
 GEMINI_KEY = "AIzaSyDJ0Opfq__BMivJ7u3uergg4UeYid03wys"
 
@@ -81,12 +83,3 @@ if st.button("📡 取得全台天氣 + Gemini 摘要"):
 
         st.subheader("🤖 Gemini 溫柔摘要")
         st.write(summary)
-
-        # === 下拉選單功能 ===
-        st.subheader("🔽 選擇城市查看詳細資料")
-        city_list = df["城市"].tolist()
-        selected_city = st.selectbox("請選擇城市", city_list)
-
-        if selected_city:
-            city_data = df[df["城市"] == selected_city]
-            st.write(city_data)
