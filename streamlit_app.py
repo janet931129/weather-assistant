@@ -47,18 +47,17 @@ def call_gemini(text):
 {text}"""
 
     try:
-        # 嘗試新版 SDK 寫法
+        # 嘗試新版 SDK
         try:
             model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content(prompt)
             return response.text
         except Exception:
-            # 如果失敗，退回舊版 SDK 寫法
+            # 如果失敗，退回舊版 SDK
             response = genai.generate_text(
                 model="models/text-bison-001",
                 prompt=prompt
             )
-            # 舊版回傳結構不同
             return getattr(response, "result", None) or getattr(response, "text", None) or str(response)
     except Exception as e:
         return f"Gemini 錯誤：{e}"
