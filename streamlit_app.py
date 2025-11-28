@@ -17,7 +17,7 @@ def fetch_latest_weather():
     url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
     params = {"Authorization": CWA_KEY, "locationName": "臺北市", "limit": 1}
     try:
-        resp = requests.get(url, params=params, timeout=10)
+        resp = requests.get(url, params=params, timeout=10, verify=False)
         resp.raise_for_status()
         data = resp.json()
         records = data.get("records", {}).get("locations", [])
