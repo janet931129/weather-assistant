@@ -112,7 +112,9 @@ st.markdown(
 # === 按鈕：生成 Gemini 摘要（放在下拉選單後面） ===
 if st.button("👩‍💼即時氣象主播（生成摘要）"):
     with st.spinner("Gemini 正在生成摘要…"):
-        summary = call_gemini(df.to_dict(orient="records"))
+        # 只傳選中的城市資訊
+        city_info_text = f"城市：{city}\n最高溫：{info['最高溫']}°C\n最低溫：{info['最低溫']}°C\n天氣狀況：{info['天氣描述']}"
+        summary = call_gemini(city_info_text)
 
     # === 白色、有框、有陰影的摘要卡片 ===
     st.markdown(
