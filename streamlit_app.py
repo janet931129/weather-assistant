@@ -9,8 +9,9 @@ st.title("👩‍💼即時氣象主播 Demo")
 st.caption("CWA 全台天氣資料與 Gemini LLM 整合")
 
 # === API Key 設定 ===
-CWA_KEY = "CWA-FCEEAE83-A00B-455B-BD97-208C11A9E5F3"
-GEMINI_KEY = "AIzaSyDJ0Opfq__BMivJ7u3uergg4UeYid03wys"
+CWA_KEY = st.secrets["CWA_KEY"]
+GEMINI_KEY = st.secrets["GEMINI_KEY"]
+
 
 
 # === 取得所有城市天氣預報 ===
