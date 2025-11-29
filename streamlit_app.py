@@ -122,7 +122,7 @@ if st.button("👩‍💼即時氣象主播（生成摘要）"):
         <div style="
             background-color: white;
             padding: 20px;
-            margin-top: 10px;
+            margin-top: 8px;
             border-radius: 10px;
             border: 1px solid #DDD;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
