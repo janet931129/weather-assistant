@@ -92,10 +92,18 @@ st.subheader("查詢城市天氣")
 city = st.selectbox("選擇城市", df["城市"].tolist())
 info = details[city]
 
-st.info(
-    f"🔥 最高溫: {info['最高溫']}°C  <br>"
-    f"❄️ 最低溫: {info['最低溫']}°C  <br>"
-    f"☁️ 天氣狀況: {info['天氣描述']}",
+st.markdown(
+    f"""
+    <div style="
+        background-color:#f0f2f6; 
+        padding:10px; 
+        border-radius:5px;
+        border:1px solid #e0e0e0;">
+        🔥 最高溫: {info['最高溫']}°C<br>
+        ❄️ 最低溫: {info['最低溫']}°C<br>
+        ☁️ 天氣狀況: {info['天氣描述']}
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
