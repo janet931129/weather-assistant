@@ -93,9 +93,10 @@ city = st.selectbox("選擇城市", df["城市"].tolist())
 info = details[city]
 
 st.info(
-    f"🔥 最高溫: {info['最高溫']}°C\n"
-    f"❄️ 最低溫: {info['最低溫']}°C\n"
-    f"☁️ 天氣狀況: {info['天氣描述']}"
+    f"🔥 最高溫: {info['最高溫']}°C  <br>"
+    f"❄️ 最低溫: {info['最低溫']}°C  <br>"
+    f"☁️ 天氣狀況: {info['天氣描述']}",
+    unsafe_allow_html=True
 )
 
 # === 按鈕：生成 Gemini 摘要（放在下拉選單後面） ===
