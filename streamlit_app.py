@@ -12,7 +12,6 @@ st.caption("CWA 全台天氣資料與 Gemini LLM 整合")
 CWA_KEY = st.secrets["CWA_API_KEY"]
 GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 
-
 # === 取得所有城市天氣預報 ===
 def fetch_all_weather():
     url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
@@ -25,112 +24,103 @@ def fetch_all_weather():
     except Exception as e:
         return {"error": f"API 錯誤: {e}"}
 
-
 # === Gemini 生成摘要 ===
 def call_gemini(text):
     genai.configure(api_key=GEMINI_KEY)
     model = genai.GenerativeModel("gemini-2.5-pro")
-    prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊，並加上一句溫和的問候：
-
-{text}"""
+    prompt = f"""請用溫柔、親切的語氣摘要以下天氣資訊，並加上一句溫和的問候：\n\n{text}"""
     try:
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         return f"Gemini 錯誤：{e}"
 
+# === 主流程 - 預先載入資料 ===
+with st.spinner("正在抓取中央氣象署天氣資料…"):
+    data = fetch_all_weather()
 
-# === 自訂按鈕 CSS ===
-button_css = """
-<style>
-div.stButton > button:first-child {
-    background-color: white;
-    color: black;
-    border: 1px solid #CCCCCC;
-    border-radius: 8px;
-    padding: 0.6em 1.2em;
-    font-size: 16px;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
-div.stButton > button:first-child:hover {
-    background-color: #f5f5f5;
-    border-color: #999999;
-}
-</style>
-"""
-st.markdown(button_css, unsafe_allow_html=True)
+if isinstance(data, dict) and "error" in data:
+    st.error(data["error"])
+    st.stop()
 
+# === 整理為資料表 + 詳細字典 ===
+rows = []
+details = {}
 
+for loc in data:
+    location = loc.get("locationName", "")
+    weather_elements = loc.get("weatherElement", [])
 
-# === UI 主流程 ===
-if st.button("📡 生成全台天氣摘要"):
-    with st.spinner("正在抓取 CWA 天氣資料..."):
-        data = fetch_all_weather()
+    min_temps = []
+    max_temps = []
+    wx_list = []
 
-    if isinstance(data, dict) and "error" in data:
-        st.error(data["error"])
+    for element in weather_elements:
+        name = element.get("elementName")
+        times = element.get("time", [])
 
-    else:
-        rows = []
-        details = {}
+        for t in times:
+            val = t.get("parameter", {}).get("parameterName")
 
-        for loc in data:
-            location = loc.get("locationName", "")
-            weather_elements = loc.get("weatherElement", [])
+            if name == "Wx" and val:
+                wx_list.append(val)
 
-            min_temps = []
-            max_temps = []
-            wx_list = []
+            if val and val.isdigit():
+                val = int(val)
+                if name == "MinT":
+                    min_temps.append(val)
+                elif name == "MaxT":
+                    max_temps.append(val)
 
-            for element in weather_elements:
-                name = element.get("elementName")
-                times = element.get("time", [])
+    rows.append({
+        "城市": location,
+        "最低溫": min(min_temps) if min_temps else None,
+        "最高溫": max(max_temps) if max_temps else None
+    })
 
-                for t in times:
-                    val = t.get("parameter", {}).get("parameterName")
+    details[location] = {
+        "最低溫": min(min_temps) if min_temps else None,
+        "最高溫": max(max_temps) if max_temps else None,
+        "天氣描述": wx_list[0] if wx_list else "N/A"
+    }
 
-                    if name == "Wx":  # 天氣描述
-                        if val:
-                            wx_list.append(val)
+df = pd.DataFrame(rows)
 
-                    if val and val.isdigit():
-                        val = int(val)
-                        if name == "MinT":
-                            min_temps.append(val)
-                        elif name == "MaxT":
-                            max_temps.append(val)
+# === ❶ 按鈕：生成 Gemini 摘要 ===
+st.subheader("🤖 產生 AI 天氣摘要")
 
-            rows.append({
-                "城市": location,
-                "最低溫": min(min_temps) if min_temps else None,
-                "最高溫": max(max_temps) if max_temps else None
-            })
+if st.button("✨ 生成今日全台天氣摘要"):
+    with st.spinner("Gemini 正在生成摘要…"):
+        summary = call_gemini(df.to_dict(orient="records"))
 
-            details[location] = {
-                "最低溫": min(min_temps) if min_temps else None,
-                "最高溫": max(max_temps) if max_temps else None,
-                "天氣描述": wx_list[0] if wx_list else "N/A"
-            }
+    # === 白色、有框、有陰影的摘要 UI ===
+    st.markdown(
+        f"""
+        <div style="
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #DDD;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            ">
+            <h4>🌤 Gemini 天氣摘要</h4>
+            <p style="font-size:16px; line-height:1.6;">
+                {summary}
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        df = pd.DataFrame(rows)
+# === ❷ 城市下拉選單：永遠顯示 ===
+st.subheader("📍 查詢城市天氣")
 
-        # ----❶ Gemini 摘要放在 caption 下方 + AI 對話框----
-        with st.spinner("Gemini 正在生成溫柔摘要..."):
-            summary = call_gemini(df.to_dict(orient="records"))
+city = st.selectbox("選擇城市", df["城市"].tolist())
 
-        st.subheader("🤖 Gemini 溫柔摘要（AI 對話框）")
-        with st.chat_message("assistant"):
-            st.write(summary)
-
-        # ----❷ 下拉選單顯示城市詳細天氣----
-        st.subheader("📍 查詢城市天氣")
-        city = st.selectbox("選擇城市", df["城市"].tolist())
-
-        info = details[city]
-        st.info(
-            f"**{city} 今日天氣**\n\n"
-            f"🌡 **最低溫:** {info['最低溫']}°C\n"
-            f"🔥 **最高溫:** {info['最高溫']}°C\n"
-            f"☁️ **天氣狀況:** {info['天氣描述']}"
-        )
+info = details[city]
+st.info(
+    f"**{city} 今日天氣**\n\n"
+    f"🌡 **最低溫:** {info['最低溫']}°C\n"
+    f"🔥 **最高溫:** {info['最高溫']}°C\n"
+    f"☁️ **天氣狀況:** {info['天氣描述']}"
+)
