@@ -9,8 +9,8 @@ st.title("👩‍💼即時氣象主播 Demo")
 st.caption("CWA 全台天氣資料與 Gemini LLM 整合")
 
 # === API Key 設定 ===
-CWA_KEY = st.secrets["CWA_KEY"]
-GEMINI_KEY = st.secrets["GEMINI_KEY"]
+CWA_KEY = st.secrets["CWA_API_KEY"]
+GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 
 
 
