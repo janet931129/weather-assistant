@@ -13,7 +13,6 @@ CWA_KEY = st.secrets["CWA_API_KEY"]
 GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 
 
-
 # === 取得所有城市天氣預報 ===
 def fetch_all_weather():
     url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
@@ -41,8 +40,31 @@ def call_gemini(text):
         return f"Gemini 錯誤：{e}"
 
 
+# === 自訂按鈕 CSS ===
+button_css = """
+<style>
+div.stButton > button:first-child {
+    background-color: white;
+    color: black;
+    border: 1px solid #CCCCCC;
+    border-radius: 8px;
+    padding: 0.6em 1.2em;
+    font-size: 16px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+div.stButton > button:first-child:hover {
+    background-color: #f5f5f5;
+    border-color: #999999;
+}
+</style>
+"""
+st.markdown(button_css, unsafe_allow_html=True)
+
+
+
 # === UI 主流程 ===
-if st.button("📡 取得全台天氣資料"):
+if st.button("📡 生成全台天氣摘要"):
     with st.spinner("正在抓取 CWA 天氣資料..."):
         data = fetch_all_weather()
 
@@ -50,7 +72,6 @@ if st.button("📡 取得全台天氣資料"):
         st.error(data["error"])
 
     else:
-        # ----整理資料----
         rows = []
         details = {}
 
@@ -94,15 +115,15 @@ if st.button("📡 取得全台天氣資料"):
 
         df = pd.DataFrame(rows)
 
-        # ----❶ Gemini 摘要放在 caption 下方 + 對話框----
-        with st.spinner("Gemini 正在生成摘要..."):
+        # ----❶ Gemini 摘要放在 caption 下方 + AI 對話框----
+        with st.spinner("Gemini 正在生成溫柔摘要..."):
             summary = call_gemini(df.to_dict(orient="records"))
 
         st.subheader("🤖 Gemini 溫柔摘要（AI 對話框）")
         with st.chat_message("assistant"):
             st.write(summary)
 
-        # ----❷ 下拉式選單顯示單一城市天氣----
+        # ----❷ 下拉選單顯示城市詳細天氣----
         st.subheader("📍 查詢城市天氣")
         city = st.selectbox("選擇城市", df["城市"].tolist())
 
