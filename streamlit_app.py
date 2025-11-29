@@ -100,7 +100,7 @@ st.markdown(
         border-radius:5px;
         margin-bottom:20px;
     ">
-        今日天氣 C<br>
+        <b>今日天氣 <br>
         🔥 最高溫：{info['最高溫']}°C<br>
         ❄️ 最低溫：{info['最低溫']}°C<br>
         ☁️ 天氣狀況：{info['天氣描述']}
