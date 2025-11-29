@@ -99,7 +99,6 @@ st.markdown(
         background-color:#FFF8DC;   /* 淺米黃色 */
         padding:10px 15px; 
         border-radius:5px;
-        border:1px solid #e0e0e0;
         margin-bottom:20px;          /* 與下方摘要間隔 */
     ">
         🔥 最高溫：{info['最高溫']}°C<br>
