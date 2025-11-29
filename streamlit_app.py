@@ -5,9 +5,9 @@ import certifi
 import pandas as pd
 
 # === Streamlit 基本設定 ===
-st.set_page_config(page_title="🌥️ 多雲 + API-first Demo", layout="centered")
-st.title("🌥️ 多雲 + API-first Demo")
-st.caption("CWA 全台天氣資料 + Gemini LLM 整合")
+st.set_page_config(page_title="👩‍💼即時氣象主播 Demo", layout="centered")
+st.title("👩‍💼即時氣象主播 Demo")
+st.caption("CWA 全台天氣資料與 Gemini LLM 整合")
 
 # === API Key 設定 ===
 CWA_KEY = "CWA-FCEEAE83-A00B-455B-BD97-208C11A9E5F3"
