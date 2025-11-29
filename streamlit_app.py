@@ -4,8 +4,8 @@ import google.generativeai as genai
 import pandas as pd
 
 # === Streamlit 基本設定 ===
-st.set_page_config(page_title="👩‍💼即時氣象主播 Demo", layout="centered")
-st.title("👩‍💼即時氣象主播 Demo")
+st.set_page_config(page_title="🌞 全台天氣資訊 DashBoard", layout="centered")
+st.title("🌞 全台天氣資訊 DashBoard")
 st.caption("CWA 全台天氣資料與 Gemini LLM 整合")
 
 # === API Key 設定 ===
@@ -86,33 +86,7 @@ for loc in data:
 
 df = pd.DataFrame(rows)
 
-# === ❶ 按鈕：生成 Gemini 摘要 ===
-st.subheader("🤖 產生 AI 天氣摘要")
-
-if st.button("✨ 生成今日全台天氣摘要"):
-    with st.spinner("Gemini 正在生成摘要…"):
-        summary = call_gemini(df.to_dict(orient="records"))
-
-    # === 白色、有框、有陰影的摘要 UI ===
-    st.markdown(
-        f"""
-        <div style="
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #DDD;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            ">
-            <h4>🌤 Gemini 天氣摘要</h4>
-            <p style="font-size:16px; line-height:1.6;">
-                {summary}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# === ❷ 城市下拉選單：永遠顯示 ===
+# === 城市下拉選單（永遠顯示） ===
 st.subheader("📍 查詢城市天氣")
 
 city = st.selectbox("選擇城市", df["城市"].tolist())
@@ -124,3 +98,27 @@ st.info(
     f"🔥 **最高溫:** {info['最高溫']}°C\n"
     f"☁️ **天氣狀況:** {info['天氣描述']}"
 )
+
+# === 按鈕：生成 Gemini 摘要（放在下拉選單後面） ===
+if st.button("👩‍💼即時氣象主播（生成摘要）"):
+    with st.spinner("Gemini 正在生成摘要…"):
+        summary = call_gemini(df.to_dict(orient="records"))
+
+    # === 白色、有框、有陰影的摘要卡片 ===
+    st.markdown(
+        f"""
+        <div style="
+            background-color: white;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid #DDD;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            ">
+            <p style="font-size:16px; line-height:1.6;">
+                {summary}
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
